@@ -8,10 +8,10 @@ def main():
     trainPath = config.get('DATA', 'STD_TRAIN')
 
     # load train data
-    lexicon, allTree = dataPrep(trainPath)
+    # lexicon, allTree = dataPrep(trainPath)
 
     # graph of tensorflow
-    
+    model_train()
     return
 
 if __name__ == '__main__':
