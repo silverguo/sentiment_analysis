@@ -94,6 +94,7 @@ bounds = tf.placeholder(tf.int32, shape=[len(sentences), 2], name='bounds')
 nodes = tf.placeholder(tf.int32, shape=[n_nodes, N_INFOS, 1], name='nodes')
 labels = tf.placeholder(tf.float32, shape=[n_nodes, FLAGS.n_labels, 1], name='labels')
 
+# get the feed dict
 f_dict = fill_feed_dict(bounds, nodes, labels, sentences)
 
 words = weight_variable([len(dsdict), FLAGS.wvs, 1], name='words')
