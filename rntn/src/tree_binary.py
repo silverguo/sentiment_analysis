@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-__all__ = ['BinaryTree', 'Node']
+__all__ = ['BinaryTree']
 
 # binary tree class
 class BinaryTree(object):
@@ -62,7 +62,7 @@ class BinaryTree(object):
                 # set prob label to 1
                 idxLabel = min(math.floor(label[pNode.word] / 0.2), 4)
                 pNode.yreal[idxLabel] = 1.0
-                # parent order is same as light branch
+                # parent order is same as previous element
                 pNode.order = aNode.order
 
 

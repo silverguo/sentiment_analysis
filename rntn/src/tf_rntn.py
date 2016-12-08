@@ -1,6 +1,16 @@
 import tensorflow as tf
+import .data_load import dataPrep
 
-__all__ = ['model_train']
+
+__all__ = ['RNTN_Model']
+
+# rntn model class
+class RNTN_Model():
+    
+    # load data, train, test and dev
+    def load_data(self, filePath):
+        self.lexicon, self.allTree = dataPrep(filePath)
+
 
 # flags of tensorflow
 flags = tf.app.flags
@@ -43,6 +53,5 @@ def model_train():
                                name='softB')
 
     # load
-
 
     return

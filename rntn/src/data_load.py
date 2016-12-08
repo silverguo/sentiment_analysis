@@ -3,8 +3,7 @@ from os import path
 import pandas as pd
 from .tree_binary import BinaryTree
 
-__all__ = ['loadStree', 'loadSostr', 'loadDsplit', 
-           'loadDict', 'loadSentlabel', 'dataPrep']
+__all__ = ['dataPrep']
 
 def loadStree(filePath, fileName='STree.txt'):
     with open(path.join(filePath, fileName), 'r') as f:
