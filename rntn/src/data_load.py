@@ -41,13 +41,20 @@ def loadSentlabel(filePath, fileName='sentiment_labels.txt'):
              .set_index('phrase ids')['sentiment values'] \
              .to_dict()
 
+# data preparation
 def dataPrep(filePath):
+    # load tree struct, list of number 
     structTree = loadStree(filePath)
+    # load word list and build the dict of words
     sentences, lexicon = loadSostr(filePath)
+    # label of sample for each sentence
     sampleSplit = loadDsplit(filePath)
+    # dict of phrases
     idxDict = loadDict(filePath)
+    # sentiment label for each phrase
     sentLabel = loadSentlabel(filePath)
     
+    # dict for phrase and sentiment
     dictLabel = dict()
     for key, value in idxDict.items():
         dictLabel[value] = sentLabel[key]
@@ -60,6 +67,7 @@ def dataPrep(filePath):
         sentence = sentences[idx]
         structure = structTree[idx]
         dSplit = sampleSplit[idx]
+        # build the tree class
         allTree[dSplit].append(BinaryTree(sentence, 
                                           structure, 
                                           dictLabel))
