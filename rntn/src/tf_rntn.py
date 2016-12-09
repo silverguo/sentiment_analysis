@@ -2,15 +2,39 @@ import tensorflow as tf
 import .data_load import dataPrep
 
 
-__all__ = ['RNTN_Model']
+__all__ = ['RecursiveNTensorN']
 
 # rntn model class
-class RNTN_Model():
-    
+class RecursiveNTensorN():
+
+    def __init__(self):
+        self.
+
     # load data, train, test and dev
     def load_data(self, filePath):
         self.lexicon, self.allTree = dataPrep(filePath)
 
+ 
+    # define parameters of rntn
+    def add_model_variable(self):
+        with tf.name_scope('weights'):
+            self.tensorV = weight_variable([2 * FLAGS.word_size, 
+                                            2 * FLAGS.word_size, 
+                                            FLAGS.word_size], 
+                                           name='tensorV')
+            self.linearW = weight_variable([FLAGS.word_size, 
+                                            2 * FLAGS.word_size], 
+                                            name='linearW')
+            self.softW = weight_variable([FLAGS.label_number, 
+                                         FLAGS.word_size], 
+                                         name='softW')
+        with tf.name_scope('bias'):
+            self.linearB = bias_variables([FLAGS.word_size, 1], 
+                                          name='linearB')
+            self.softB = bias_variables([FLAGS.label_number, 1], 
+                                        name='softB')
+
+    def inference(self, sentenceTree, )
 
 # flags of tensorflow
 flags = tf.app.flags
