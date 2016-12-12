@@ -17,6 +17,11 @@ class RecursiveNTensorN():
     # load data, train, test and dev
     def load_data(self, filePath):
         self.lexicon, self.allTree = dataPrep(filePath)
+        self.vocab = dict()
+        idxWord = 0
+        for word in lexicon:
+            self.vocab[word] = idxWord
+            idxWord += 1
 
     # input placeholders
     def add_input_placeholder(self):
@@ -71,7 +76,6 @@ class RecursiveNTensorN():
                                                           self.wordSize * self.wordSize * 2])), 
                                     [self.wordSize * 2, self.wordSize]))
                          
-
     # weight layer
     def weight_layer(self, childrenTensor):
         return tf.matmul(linearW, childrenTensor)
@@ -127,8 +131,20 @@ class RecursiveNTensorN():
         self.train_op = tf.train.AdamOptimizer(self.learnRate).minimize(self.fullLoss)
 
     # input dict feed
-    def build_feed_dict(self, ):
-
+    def build_feed_dict(self, sTree):
+        feed_dict = {
+                     self.isLeafPh: [node.isLeaf
+                                     for node in sTree.nodes], 
+                     self.leftChildPh: [node.leftChild
+                                        for node in sTree.nodes], 
+                     self.rightChildPh: [node.rightChild
+                                         for node in sTree.nodes], 
+                     self.nodeIndicePh: [self.vocab.get(node.word, -1)
+                                         for node in sTree.nodes], 
+                     self.labelPh: [node.sentiLabel
+                                    for node in sTree.nodes]
+        }
+        return feed_dict
 
     # training model
     def model_train(self, filePath):

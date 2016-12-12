@@ -19,6 +19,7 @@ class BinaryTree(object):
         for idx, word in enumerate(sentence):
             node = self.nodes[idx]
             node.word = word
+            node.isLeaf = True
             # order of leaf is word index
             node.order = idx
             self.leaves.append(node)
@@ -45,8 +46,12 @@ class BinaryTree(object):
         # give the prob labe
         if label is not None:
             for node in self.leaves:
+                # fake left and right child
+                node.leftChild = -1
+                node.rightChild = -1
                 # set prob label to 1
                 idxLabel = min(math.floor(label[node.word] / 0.2), 4)
+                node.sentiLabel = idxLabel
                 node.yreal[idxLabel] = 1.0
 
             # parent and tuple of children
@@ -56,27 +61,33 @@ class BinaryTree(object):
                 bNode = self.nodes[b]
                 # word of parent node
                 if aNode.order < bNode.order:
+                    # add left and right child
+                    pNode.leftChild = a
+                    pNode.rightChild = b
                     pNode.word = ' '.join([aNode.word, bNode.word])
                 else:
+                    pNode.leftChild = b
+                    pNode.rightChild = a
                     pNode.word = ' '.join([bNode.word, aNode.word])
                 # set prob label to 1
                 idxLabel = min(math.floor(label[pNode.word] / 0.2), 4)
+                node.sentiLabel = idxLabel
                 pNode.yreal[idxLabel] = 1.0
-                # parent order is same as previous element
+                # parent order is no matter which child
                 pNode.order = aNode.order
 
 
 class Node(object):
     def __init__(self, word=None, label=None):
         self.word = word
+        self.isLeaf = False
         self.order = None
         self.parent = None
         self.children = []
+        self.leftChild = None
+        self.rightChild = None
         self.yreal = np.zeros(5)
+        self.sentiLabel = None
 
-        # never used
-        self.ypred = None
-        self.X = None
-        self.d = None
 
 
