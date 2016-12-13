@@ -8,10 +8,11 @@ def main():
     trainPath = config.get('DATA', 'STD_TRAIN')
 
     # load train data
-    lexicon, allTree = dataPrep(trainPath)
+    # lexicon, allTree = dataPrep(trainPath)
 
-    # graph of tensorflow
-    # model_train()
+    # class of rntn
+    rntn = RecursiveNTensorN()
+    rntn.model_train(trainPath)
     return
 
 if __name__ == '__main__':
