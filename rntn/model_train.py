@@ -7,9 +7,6 @@ def main():
     config.read('./config.ini')
     trainPath = config.get('DATA', 'STD_TRAIN')
 
-    # load train data
-    # lexicon, allTree = dataPrep(trainPath)
-
     # class of rntn
     rntn = RecursiveNTensorN()
     rntn.model_train(trainPath)

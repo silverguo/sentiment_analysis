@@ -205,7 +205,3 @@ class RecursiveNTensorN():
             lossHistory['train'].append(trainLoss)
 
 
-
-
-
-# https://github.com/bogatyy/cs224d/blob/master/assignment3/rnn_static_graph.py#L56
