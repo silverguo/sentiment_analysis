@@ -71,7 +71,7 @@ class BinaryTree(object):
                     pNode.word = ' '.join([bNode.word, aNode.word])
                 # set prob label to 1
                 idxLabel = min(math.floor(label[pNode.word] / 0.2), 4)
-                node.sentiLabel = idxLabel
+                pNode.sentiLabel = idxLabel
                 pNode.yreal[idxLabel] = 1.0
                 # parent order is no matter which child
                 pNode.order = aNode.order

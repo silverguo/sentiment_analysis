@@ -1,5 +1,6 @@
 import tensorflow as tf
 import os
+import numpy as np
 from .data_load import dataPrep
 
 
@@ -15,7 +16,7 @@ class RecursiveNTensorN():
         self.labelNum = 5
         self.coefL2 = 0.02
         self.learnRate = 0.001
-        self.iterNum = 1000
+        self.iterNum = 0
         self.modelDir = './tf_checkpoint/'
         self.modelReload = 'model_last'
 
@@ -83,7 +84,7 @@ class RecursiveNTensorN():
                          
     # weight layer
     def weight_layer(self, childrenTensor):
-        return tf.matmul(self.linearW, childrenTensor)
+        return tf.matmul(childrenTensor, self.linearW)
 
     # hidden layer
     def hidden_layer(self, leftTensor, rightTensor):
@@ -93,20 +94,20 @@ class RecursiveNTensorN():
                           self.linearB)
                    
     # loop body for while
-    def loop_body(self, idx):
+    def loop_body(self, tensorArray, idx):
         nodeIndice = tf.gather(self.nodeIndicePh, idx)
         leftChild = tf.gather(self.leftChildPh, idx)
         rightChild = tf.gather(self.rightChildPh, idx)
         nodeVector = tf.cond(tf.gather(self.isLeafPh, idx), 
                              lambda: self.word_indice(nodeIndice), 
-                             lambda: self.hidden_layer(self.modelArray.read(leftChild), 
-                                                       self.modelArray.read(rightChild)))
-        self.modelArray = self.modelArray.write(idx, nodeVector)
+                             lambda: self.hidden_layer(tensorArray.read(leftChild), 
+                                                       tensorArray.read(rightChild)))
+        tensorArray = tensorArray.write(idx, nodeVector)
         idx = tf.add(idx, 1)
-        return idx
+        return tensorArray, idx
 
     # loop condition for while
-    def loop_cond(self, idx):
+    def loop_cond(self, tensorArray, idx):
         return tf.less(idx, tf.squeeze(tf.shape(self.isLeafPh)))
 
     # build the recursive graph
@@ -117,9 +118,11 @@ class RecursiveNTensorN():
         self.add_input_placeholder()
         self.add_model_variable()
         # while loop for hidden layer
+        tensorArray = self.modelArray
         self.modelArray, _ = tf.while_loop(self.loop_cond, 
-                          self.loop_body, 
-                          [0])
+                                           self.loop_body, 
+                                           [tensorArray, 0], 
+                                           parallel_iterations=1)
         # softmax layer
         self.logit = tf.matmul(self.modelArray.concat(), self.softW) + self.softB
         self.rootLogit = tf.gather(self.logit, self.modelArray.size()-1)
@@ -155,18 +158,20 @@ class RecursiveNTensorN():
         return feed_dict
 
     # training iteration
-    def iter_train(self, newModel=False):
+    def iter_train(self, firstIter=False, loadModel=False):
         lossHistory = []
         with tf.Session() as sess:
-            if newModel:
-                sess.run(tf.initialize_all_variables())
-            else:
+            if firstIter:
+                sess.run(tf.global_variables_initializer())
+            elif loadModel:
                 saver = tf.train.Saver()
                 saver.restore(sess, self.modelDir + self.modelReload)
-            selIdx = tf.random_uniform([50], minval=0, maxval=len(allTree['1']), 
-                                       dtype=tf.int32)
+            selIdx = [2, 10]
             for idx in selIdx:
-                feed_dict = build_feed_dict(allTree['1'][idx])
+                feed_dict = self.build_feed_dict(self.allTree[1][idx])
+                for node in self.allTree[1][idx].nodes:
+                    if node.sentiLabel == None:
+                        print(node.word)
                 idxLoss, _ = sess.run([self.fullLoss, self.train_op], 
                                        feed_dict=feed_dict)
                 lossHistory.append(idxLoss)
@@ -191,12 +196,12 @@ class RecursiveNTensorN():
         # accHistory['dev'] = []
 
         # initial iter
-        trainLoss = self.iter_train(newModel=True)
+        trainLoss = self.iter_train(firstIter=True)
         lossHistory['train'].append(trainLoss)
 
         # iteration for training
         for iterIdx in range(self.iterNum):
-            trainLoss = self.iter_train(newModel=False)
+            trainLoss = self.iter_train()
             lossHistory['train'].append(trainLoss)
 
 
