@@ -1,0 +1,8 @@
+# data
+/data
+
+# check point
+/tf_checkpoint
+
+# python
+src/__pycache__
