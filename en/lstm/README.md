@@ -1,2 +1,3 @@
 # LSTM
 
+- Implementation of LSTM
