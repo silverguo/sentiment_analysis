@@ -5,10 +5,11 @@ def main():
     # read the config
     config = configparser.ConfigParser()
     config.read('./config.ini')
-    trainPath = config.get('DATA', 'IMDB_PATH')
+    imdbPath = config.get('DATA', 'IMDB_PATH')
 
     # load data
-    print(trainPath)
+    dl = ImdbLoader(imdbPath)
+    dl.load_set()
     return
 
 if __name__ == '__main__':
