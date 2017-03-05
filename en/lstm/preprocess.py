@@ -1,7 +1,9 @@
 from src import *
 import configparser
+import pickle
 
-def main():
+# main
+if __name__ == '__main__':
     # read the config
     config = configparser.ConfigParser()
     config.read('./config.ini')
@@ -9,8 +11,9 @@ def main():
 
     # load data
     dl = ImdbLoader(imdbPath)
-    dl.load_set()
-    return
+    dictReview = dl.dict_load()
 
-if __name__ == '__main__':
-    main()
+    # pickle dict
+    with open('./data/temp/imdb_dict.pkl', 'wb') as f:
+        pickle.dump(dictReview, f)
+
