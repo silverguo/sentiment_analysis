@@ -47,8 +47,35 @@ class Config(object):
 
 
 # run epoch 
-def run_epoch():
-    pass
+def run_epoch(session, model, dataset):
+    for input_sample, seq_length, real_label in dataset:
+
+        # feed dict
+        feed_dict = {}
+        feed_dict[model.input_sample] = input_sample
+        feed_dict[model.seq_length] = seq_length
+        feed_dict[model.real_label] = real_label
+
+        # param fetch
+        fetches = {'cost': model.cost,
+                   'accuracy': model.accuracy, 
+                   'summary', model.summary}
+
+        # initial state
+        state = session.run(model._initial_state)
+        for idx, (c, h) in enumerate(model._initial_state):
+            feed_dict[c] = state[idx].c
+            feed_dict[h] = state[idx].h
+        
+        # run model
+        cost, accuracy, summary = session.run(fetches, feed_dict)
+
+        # show accuracy
+        print('accuracy: %.3f' % (accuracy))
+
+    return cost
+
+    
 
 
 # main
@@ -96,7 +123,20 @@ def main(_):
                 m.assign_new_learning_rate(session, 
                                            config.learning_rate * learning_rate_decay)
                 # run epoch
-
+                train_cost = run_epoch(session, m, dataset_dict['train'])
+                print('epoch %d train cost: %.3f' % (i, train_cost))
+                valid_cost = run_epoch(session, m, dataset_dict['valid'])
+                print('epoch %d valid cost: %.3f' % (i, valid_cost))
+                
+                # checkpoint
+                if i % config.check_point_every == 0:
+                    print('model chechpoint to {}'.format(config.model_dir))
+                    sv.saver.save(session, config.model_dir, 
+                                  global_step=sv.global_step)
+            
+            # test in end of train
+            test_cost = run_epoch(session, m, dataset_dict['test'])
+            print('train finish test cost: %.3f' % (test_cost))
 
 
 
