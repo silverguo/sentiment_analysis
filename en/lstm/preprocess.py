@@ -6,7 +6,11 @@ def imdb_prep():
     dl = ImdbLoader('./data/aclImdb')
     dictReview = dl.dict_load()
 
-    # prep for feed model
+    # print(len(dictReview['test']['sentence']))
+
+    # prep for batch training
+    
+    
 
 
 # main

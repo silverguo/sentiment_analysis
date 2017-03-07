@@ -59,7 +59,7 @@ class Senti_Lstm(object):
         with tf.variable_scope('lstm_layer'):
             output_lstm, final_state = tf.nn.dynamic_rnn(cell=multi_lstm, 
                                                         inputs=input_embed, 
-                                                        sequence_length=self.seq_length
+                                                        sequence_length=self.seq_length, 
                                                         initial_state=self._initial_state)
             # output flat
             output_lstm_flat = tf.reshape(output_lstm, [-1, hidden_size])
@@ -88,8 +88,8 @@ class Senti_Lstm(object):
         # accuracy
         with tf.name_scope('accuracy'):
             self.correct_pred = tf.equal(self.pred_label, real_label)
-			self.accuracy = tf.reduce_mean(tf.cast(self.correct_pred, tf.float32), 
-                                           name="accuracy")
+            self.accuracy = tf.reduce_mean(tf.cast(self.correct_pred, tf.float32), 
+                                           name='accuracy')
         
         
         # add summary
@@ -100,7 +100,7 @@ class Senti_Lstm(object):
         if is_training:
             params = tf.trainable_variables()
             with tf.name_scope('train'):
-				opt = tf.train.AdamOptimizer(learning_rate)
+                opt = tf.train.AdamOptimizer(learning_rate)
             gradients = tf.gradients(self.cost, params)
             clipped_grad, norm = tf.clip_by_global_norm(gradients, max_grad_norm)
             self.train_opt = opt.apply_gradients(zip(clipped_grad, params))

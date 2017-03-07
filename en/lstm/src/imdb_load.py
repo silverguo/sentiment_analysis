@@ -1,6 +1,7 @@
 import glob
 import os
 from collections import defaultdict
+import numpy as np
 
 __all__ = ['ImdbLoader']
 
@@ -29,16 +30,22 @@ class ImdbLoader:
     # load dict
     def dict_load(self):
         dictReview = defaultdict(defaultdict)
+
         # train data
         listPos, listNeg = self.dir_scan(os.path.join(self.imdbPath, 'train'))
         # read review
-        dictReview['train']['pos'] = self.review_load(listPos)
-        dictReview['train']['neg'] = self.review_load(listNeg)
+        dictReview['train']['sentence'] = self.review_load(listPos)
+        dictReview['train']['label'] = np.ones(len(listPos)).tolist()
+        dictReview['train']['sentence'] += self.review_load(listNeg)
+        dictReview['train']['label'] += np.zeros(len(listPos)).tolist()
+
         # test data
         listPos, listNeg = self.dir_scan(os.path.join(self.imdbPath, 'test'))
         # read review
-        dictReview['test']['pos'] = self.review_load(listPos)
-        dictReview['test']['neg'] = self.review_load(listNeg)
+        dictReview['test']['sentence'] = self.review_load(listPos)
+        dictReview['test']['label'] = np.ones(len(listPos)).tolist()
+        dictReview['test']['sentence'] += self.review_load(listNeg)
+        dictReview['test']['label'] += np.zeros(len(listPos)).tolist()
 
         return dictReview
 
