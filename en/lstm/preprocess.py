@@ -5,10 +5,18 @@ def imdb_prep():
     # load data
     dl = ImdbLoader('./data/aclImdb')
     dictReview = dl.dict_load()
-
-    # print(len(dictReview['test']['sentence']))
+    """
+    dictReview
+    - train
+        - sentence
+        - label
+    - test
+        - sentence
+        - label
+    """
 
     # prep for batch training
+    
     
     
 

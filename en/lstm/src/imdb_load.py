@@ -37,7 +37,7 @@ class ImdbLoader:
         dictReview['train']['sentence'] = self.review_load(listPos)
         dictReview['train']['label'] = np.ones(len(listPos)).tolist()
         dictReview['train']['sentence'] += self.review_load(listNeg)
-        dictReview['train']['label'] += np.zeros(len(listPos)).tolist()
+        dictReview['train']['label'] += np.zeros(len(listNeg)).tolist()
 
         # test data
         listPos, listNeg = self.dir_scan(os.path.join(self.imdbPath, 'test'))
@@ -45,7 +45,7 @@ class ImdbLoader:
         dictReview['test']['sentence'] = self.review_load(listPos)
         dictReview['test']['label'] = np.ones(len(listPos)).tolist()
         dictReview['test']['sentence'] += self.review_load(listNeg)
-        dictReview['test']['label'] += np.zeros(len(listPos)).tolist()
+        dictReview['test']['label'] += np.zeros(len(listNeg)).tolist()
 
         return dictReview
 
