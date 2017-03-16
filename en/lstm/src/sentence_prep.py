@@ -1,9 +1,10 @@
- import pickle
+import pickle
+import spacy
 
-__all__ = ['Sentence_Prep']
+__all__ = ['Embedding_Prep', 'Text_Prep']
 
-class Sentence_Prep(object):
-    # sentence preprocessing
+class Embedding_Prep(object):
+    # embedding preprocessing
 
     # constructor
     def __init__(self, w2v_pickle):
@@ -20,8 +21,25 @@ class Sentence_Prep(object):
 
 
     # list of tokens to idx
-    def sentence_encode(self, token_list, vocab_size=200000, 
-                        load_embedding=False):
-        return [self.word_idx.get(t) for t in token_list]
+    def token_encode(self, token_list, vocab_size=200000):
+        idx_list = []
+        for t in token_list:
+            i = self.word_idx.get(t, -1)
+            if i == -1 or i >= vocab_size:
+                i = vocab_size - 1
+            idx_list.append(i)
+        return idx_list
+    
+class Text_Prep(object):
+    # document preprocessing
+
+    # constructor
+    def __init__(self, lang='en'):
+        self.nlp = spacy.load(lang)
+    
+    # tokenizer
+    def tokenizer(self, text):
+        doc = self.nlp(text)
+        return [w.text.lower() for w in doc]
 
     
