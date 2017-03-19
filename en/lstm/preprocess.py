@@ -15,6 +15,9 @@ def imdb_prep():
         - sentence
         - label
     """
+    numSample = len(dictReview['train']['sentence']) + \
+                len(dictReview['test']['sentence'])
+    print('IMDB dataset, {} sentences are loaded'.format(numSample))
 
     # preprocessing
     en_prep = Text_Prep(lang='en')

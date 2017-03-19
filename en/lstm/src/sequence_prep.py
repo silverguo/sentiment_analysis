@@ -10,7 +10,6 @@ class Embedding_Prep(object):
     def __init__(self, w2v_pickle):
         with open(w2v_pickle, 'rb') as f:
             self.word_embedding = pickle.load(f)
-        self.word_idx = self.word_embedding['vocab']['word_idx']
         """
         word_embedding
         - embedding
@@ -18,6 +17,7 @@ class Embedding_Prep(object):
             - idx_word
             - word_idx
         """
+        self.word_idx = self.word_embedding['vocab']['word_idx']
 
 
     # list of tokens to idx
@@ -25,6 +25,7 @@ class Embedding_Prep(object):
         idx_list = []
         for t in token_list:
             i = self.word_idx.get(t, -1)
+            # if exceed the vocab size
             if i == -1 or i >= vocab_size:
                 i = vocab_size - 1
             idx_list.append(i)
