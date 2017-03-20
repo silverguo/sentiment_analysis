@@ -21,9 +21,13 @@ class Embedding_Prep(object):
 
 
     # list of tokens to idx
-    def token_encode(self, token_list, vocab_size=200000):
+    def token_encode(self, token_list, vocab_size=200000, 
+                     len_max=50):
         idx_list = []
-        for t in token_list:
+        for idx, t in enumerate(token_list):
+            # truncated by max length
+            if idx == len_max:
+                break
             i = self.word_idx.get(t, -1)
             # if exceed the vocab size
             if i == -1 or i >= vocab_size:
