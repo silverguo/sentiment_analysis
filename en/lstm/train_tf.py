@@ -5,7 +5,7 @@ import pickle
 flags =tf.app.flags
 FLAGS = flags.FLAGS
 
-flags.DEFINE_integer('vocab_size', 20000, 'vocabulary size')
+flags.DEFINE_integer('vocab_size', 200000, 'vocabulary size')
 flags.DEFINE_integer('embed_size', 300, 'embedding dimension')
 flags.DEFINE_integer('step_num', 50, 'rnn step number')
 flags.DEFINE_integer('hidden_size', 128, 'lstm hidden neural size')
@@ -15,12 +15,12 @@ flags.DEFINE_integer('num_class', 2, 'class number')
 flags.DEFINE_integer('max_grad_norm', 5, 'max gradient norm')
 flags.DEFINE_float('learning_rate', 0.1, 'learning rate')
 flags.DEFINE_integer('batch_size', 64, 'training batch size')
-flags.DEFINE_string('dataset_path', './demo/data/imdb_dataset.pkl', 'dataset path')
+flags.DEFINE_string('dataset_path', './demo/data/imdb_input.pickle', 'dataset path')
 flags.DEFINE_string('model_dir', './demo/model/', 'model directory')
 flags.DEFINE_integer('check_point_every', 2, 'number of epoch between checkpoint')
 flags.DEFINE_float('init_scale', 0.1, 'initial scale')
 flags.DEFINE_integer('epoch_num', 10, 'number of epoch')
-flags.DEFINE_integer('epoch_decay', 10, 'epoch start lr decay')
+flags.DEFINE_integer('epoch_decay', 6, 'epoch start lr decay')
 flags.DEFINE_float('learning_rate_decay', 0.5, 'learning rate decay')
 
 
@@ -42,8 +42,8 @@ class Config(object):
     check_point_every = FLAGS.check_point_every
     init_scale = FLAGS.init_scale
     epoch_num = FLAGS.epoch_num
-    learning_rate_decay = FLAGS.learning_rate_decay
     epoch_decay = FLAGS.epoch_decay
+    learning_rate_decay = FLAGS.learning_rate_decay
 
 
 # run epoch 
@@ -59,7 +59,7 @@ def run_epoch(session, model, dataset):
         # param fetch
         fetches = {'cost': model.cost,
                    'accuracy': model.accuracy, 
-                   'summary', model.summary}
+                   'summary': model.summary}
 
         # initial state
         state = session.run(model._initial_state)
@@ -75,36 +75,39 @@ def run_epoch(session, model, dataset):
 
     return cost
 
-    
 
 
 # main
 def main(_):
 
-    # load dataset and config
+    # load config of train and eval
     print('loading the dataset and config')
-    config = Config()
+    train_config = Config()
     eval_config = Config()
+    # no dropout for evaluation
     eval_config.keep_prob = 1.0
 
+    # load data
     with open(train_config.dataset_path, 'rb') as f:
-        dataset_dict = pickle.loads(f)
+        sample_dict = pickle.load(f)
     
     # training
     print('training start')
     with tf.Graph().as_default():
-        initializer = tf.random_uniform_initializer(-config.init_scale, 
-                                                    config.init_scale)
+        # default initializer
+        initializer = tf.random_uniform_initializer(-train_config.init_scale, 
+                                                    train_config.init_scale)
         
+        # name scope for train and eval
         with tf.name_scope('train'):
             with tf.variable_scope('model', reuse=None, initializer=initializer):
-                m = Senti_Lstm(is_training=True, config=config)
-            tf.summary.scalar('training loss', m.cost)
-            tf.summary.scalar('learning rate', m.learning_rate)
+                mtrain = Senti_Lstm(is_training=True, config=train_config)
+            tf.summary.scalar('training loss', mtrain.cost)
+            tf.summary.scalar('learning rate', mtrain.learning_rate)
         
         with tf.name_scope('valid'):
             with tf.variable_scope('model', reuse=True, initializer=initializer):
-                mvalid = Senti_Lstm(is_training=False, config=config)
+                mvalid = Senti_Lstm(is_training=False, config=eval_config)
             tf.summary.scalar('validation Loss', mvalid.cost)
         
         with tf.name_scope('test'):
@@ -115,6 +118,7 @@ def main(_):
         # supervisor for checkpoint the model
         sv = tf.train.Supervisor(logdir=config.model_dir)
         with sv.managed_session() as session:
+            # train epoch
             for i in range(config.epoch_num):
                 print('the %d training epoch'%i)
                 # learning rate decay
@@ -123,9 +127,9 @@ def main(_):
                 m.assign_new_learning_rate(session, 
                                            config.learning_rate * learning_rate_decay)
                 # run epoch
-                train_cost = run_epoch(session, m, dataset_dict['train'])
+                train_cost = run_epoch(session, m, sample_dict['train'])
                 print('epoch %d train cost: %.3f' % (i, train_cost))
-                valid_cost = run_epoch(session, m, dataset_dict['valid'])
+                valid_cost = run_epoch(session, m, sample_dict['valid'])
                 print('epoch %d valid cost: %.3f' % (i, valid_cost))
                 
                 # checkpoint
@@ -135,7 +139,7 @@ def main(_):
                                   global_step=sv.global_step)
             
             # test in end of train
-            test_cost = run_epoch(session, m, dataset_dict['test'])
+            test_cost = run_epoch(session, m, sample_dict['test'])
             print('train finish test cost: %.3f' % (test_cost))
 
 

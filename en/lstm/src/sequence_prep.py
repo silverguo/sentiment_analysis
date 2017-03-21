@@ -1,7 +1,8 @@
 import pickle
 import spacy
+import numpy as np
 
-__all__ = ['Embedding_Prep', 'Text_Prep']
+__all__ = ['Embedding_Prep', 'Text_Prep', 'data_split']
 
 class Embedding_Prep(object):
     # embedding preprocessing
@@ -47,4 +48,11 @@ class Text_Prep(object):
         doc = self.nlp(text)
         return [w.text.lower() for w in doc]
 
-    
+# dataset split
+def data_split(num_data, split_ratio=0.8):
+    # random index
+    idx_random = np.random.permutation(num_data)
+    # index for split
+    idx_split = int(np.round(num_data * split_ratio))
+    return idx_random[:idx_split], idx_random[idx_split:]
+

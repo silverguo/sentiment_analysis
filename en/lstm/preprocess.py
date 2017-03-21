@@ -25,13 +25,30 @@ def imdb_prep():
 
     # input dict
     imdb_input = dict()
-    # prepare train, valid and test
+    # prepare train, valid
+    idx_train, idx_valid = data_split(len(dictReview['train']['label']), 
+                                      split_ratio=0.8)
+
     # tokenize and word encode
+    # train and valid
+    print('{} train sample'.format(len(idx_train)))
     imdb_input['X_train'] = [w2v_prep.token_encode(en_prep.tokenizer(t), 
                                                    vocab_size=200000, 
                                                    len_max=50) 
-                             for t in dictReview['train']['sentence']]
-    imdb_input['y_train'] = dictReview['train']['label']
+                             for t in [dictReview['train']['sentence'][idx] 
+                                       for idx in idx_train]]
+    imdb_input['y_train'] = [dictReview['train']['label'][idx] for idx in idx_train]
+
+    print('{} valid sample'.format(len(idx_valid)))
+    imdb_input['X_valid'] = [w2v_prep.token_encode(en_prep.tokenizer(t), 
+                                                   vocab_size=200000, 
+                                                   len_max=50)  
+                             for t in [dictReview['train']['sentence'][idx] 
+                                       for idx in idx_valid]]
+    imdb_input['y_valid'] = [dictReview['train']['label'][idx] for idx in idx_valid]
+    
+    # test
+    print('{} test sample'.format(len(dictReview['test']['label'])))
     imdb_input['X_test'] = [w2v_prep.token_encode(en_prep.tokenizer(t), 
                                                   vocab_size=200000, 
                                                   len_max=50) 
@@ -39,7 +56,7 @@ def imdb_prep():
     imdb_input['y_test'] = dictReview['test']['label']
 
     # serializable
-    with open('./data/model_input/imdb_input.pickle', 'wb') as f:
+    with open('./demo/data/imdb_input.pickle', 'wb') as f:
         pickle.dump(imdb_input, f)
     
 
