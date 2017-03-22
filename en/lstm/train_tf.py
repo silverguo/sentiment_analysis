@@ -116,30 +116,30 @@ def main(_):
             tf.summary.scalar('validation Loss', mtest.cost)
         
         # supervisor for checkpoint the model
-        sv = tf.train.Supervisor(logdir=config.model_dir)
+        sv = tf.train.Supervisor(logdir=train_config.model_dir)
         with sv.managed_session() as session:
             # train epoch
-            for i in range(config.epoch_num):
+            for i in range(train_config.epoch_num):
                 print('the %d training epoch'%i)
                 # learning rate decay
-                learning_rate_decay = config.learning_rate_decay ** \
-                                      max(i - config.epoch_decay, 0.0)
+                learning_rate_decay = train_config.learning_rate_decay ** \
+                                      max(i - train_config.epoch_decay, 0.0)
                 m.assign_new_learning_rate(session, 
-                                           config.learning_rate * learning_rate_decay)
+                                           train_config.learning_rate * learning_rate_decay)
                 # run epoch
                 train_cost = run_epoch(session, m, sample_dict['train'])
                 print('epoch %d train cost: %.3f' % (i, train_cost))
-                valid_cost = run_epoch(session, m, sample_dict['valid'])
+                valid_cost = run_epoch(session, mvalid, sample_dict['valid'])
                 print('epoch %d valid cost: %.3f' % (i, valid_cost))
                 
                 # checkpoint
-                if i % config.check_point_every == 0:
-                    print('model chechpoint to {}'.format(config.model_dir))
-                    sv.saver.save(session, config.model_dir, 
+                if i % train_config.check_point_every == 0:
+                    print('model chechpoint to {}'.format(train_config.model_dir))
+                    sv.saver.save(session, train_config.model_dir, 
                                   global_step=sv.global_step)
             
             # test in end of train
-            test_cost = run_epoch(session, m, sample_dict['test'])
+            test_cost = run_epoch(session, mtest, sample_dict['test'])
             print('train finish test cost: %.3f' % (test_cost))
 
 
