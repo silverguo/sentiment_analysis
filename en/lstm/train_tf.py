@@ -47,33 +47,31 @@ class Config(object):
 
 
 # run epoch 
-def run_epoch(session, model, dataset):
-    for input_sample, seq_length, real_label in dataset:
+def run_epoch(session, model, X, y):
 
-        # feed dict
-        feed_dict = {}
-        feed_dict[model.input_sample] = input_sample
-        feed_dict[model.seq_length] = seq_length
-        feed_dict[model.real_label] = real_label
+    # feed dict
+    feed_dict = {}
+    feed_dict[model.input_sample] = X
+    feed_dict[model.real_label] = y
 
-        # param fetch
-        fetches = {'cost': model.cost,
-                   'accuracy': model.accuracy, 
-                   'summary': model.summary}
+    # param fetch
+    fetches = {'cost': model.cost,
+               'accuracy': model.accuracy, 
+               'summary': model.summary}
 
-        # initial state
-        state = session.run(model._initial_state)
-        for idx, (c, h) in enumerate(model._initial_state):
-            feed_dict[c] = state[idx].c
-            feed_dict[h] = state[idx].h
-        
-        # run model
-        cost, accuracy, summary = session.run(fetches, feed_dict)
+    # initial state
+    state = session.run(model._initial_state)
+    for idx, (c, h) in enumerate(model._initial_state):
+        feed_dict[c] = state[idx].c
+        feed_dict[h] = state[idx].h
+    
+    # run model
+    cost, accuracy, summary = session.run(fetches, feed_dict)
 
-        # show accuracy
-        print('accuracy: %.3f' % (accuracy))
+    # show accuracy
+    print('accuracy: %.3f' % (accuracy))
 
-    return cost
+    return cost, accuracy, summary
 
 
 
@@ -113,7 +111,7 @@ def main(_):
         with tf.name_scope('test'):
             with tf.variable_scope('model', reuse=True, initializer=initializer):
                 mtest = Senti_Lstm(is_training=False, config=eval_config)
-            tf.summary.scalar('validation Loss', mtest.cost)
+            tf.summary.scalar('test loss', mtest.cost)
         
         # supervisor for checkpoint the model
         sv = tf.train.Supervisor(logdir=train_config.model_dir)
@@ -124,12 +122,16 @@ def main(_):
                 # learning rate decay
                 learning_rate_decay = train_config.learning_rate_decay ** \
                                       max(i - train_config.epoch_decay, 0.0)
-                m.assign_new_learning_rate(session, 
-                                           train_config.learning_rate * learning_rate_decay)
+                mtrain.assign_new_learning_rate(session, 
+                                                train_config.learning_rate * learning_rate_decay)
                 # run epoch
-                train_cost = run_epoch(session, m, sample_dict['train'])
+                train_cost = run_epoch(session, mtrain, 
+                                       sample_dict['X_train'], 
+                                       sample_dict['y_train'])
                 print('epoch %d train cost: %.3f' % (i, train_cost))
-                valid_cost = run_epoch(session, mvalid, sample_dict['valid'])
+                valid_cost = run_epoch(session, mvalid, 
+                                       sample_dict['X_valid'], 
+                                       sample_dict['y_valid'])
                 print('epoch %d valid cost: %.3f' % (i, valid_cost))
                 
                 # checkpoint
@@ -139,7 +141,9 @@ def main(_):
                                   global_step=sv.global_step)
             
             # test in end of train
-            test_cost = run_epoch(session, mtest, sample_dict['test'])
+            test_cost = run_epoch(session, mtest, 
+                                  sample_dict['X_test'], 
+                                  sample_dict['y_test'])
             print('train finish test cost: %.3f' % (test_cost))
 
 

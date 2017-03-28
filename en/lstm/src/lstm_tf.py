@@ -20,7 +20,7 @@ class Senti_Lstm(object):
         # output
         num_class = config.num_class
         max_grad_norm = config.max_grad_norm
-        # train
+        # train param
         self.learning_rate = config.learning_rate
         self.batch_size = config.batch_size
 
@@ -28,10 +28,9 @@ class Senti_Lstm(object):
         # initial placeholder
         # input sentence
         self.input_sample = tf.placeholder(tf.int32, 
-                                           [batch_size, None])
-        self.seq_length = tf.placeholder(tf.int32, [batch_size])
+                                           [self.batch_size, None])
         # sentiment label
-        self.real_label = tf.placeholder(tf.int32, [batch_size])
+        self.real_label = tf.placeholder(tf.int32, [self.batch_size])
 
 
         # lstm layer
@@ -43,7 +42,7 @@ class Senti_Lstm(object):
                                                       output_keep_prob=keep_prob)
         multi_lstm = tf.contrib.rnn.MultiRNNCell([lstm_cell] * hidden_num, 
                                                  state_is_tuple=True)
-        self._initial_state = multi_lstm.zero_state(batch_size, tf.float32)
+        self._initial_state = multi_lstm.zero_state(self.batch_size, tf.float32)
         
         # embedding layer
         with tf.device('/cpu:0'), tf.name_scope('embedding_layer'):
