@@ -1,0 +1,50 @@
+import glob
+import os
+import string
+
+import numpy as np
+
+from sklearn.feature_extraction.text import CountVectorizer
+from nbsvm import NBSVM
+
+
+def load_imdb():
+    print("Vectorizing Training Text")
+
+    train_pos = glob.glob(os.path.join('data', 'aclImdb', 'train', 'pos', '*.txt'))
+    train_neg = glob.glob(os.path.join('data', 'aclImdb', 'train', 'neg', '*.txt'))
+
+    token_pattern = r'\w+|[%s]' % string.punctuation
+
+    # set to binary
+    vectorizer = CountVectorizer('filename', ngram_range=(1, 3),
+                                 token_pattern=token_pattern,
+                                 binary=True)
+    X_train = vectorizer.fit_transform(train_pos+train_neg)
+    y_train = np.array([1]*len(train_pos)+[0]*len(train_neg))
+
+    print("Vocabulary Size: %s" % len(vectorizer.vocabulary_))
+    print("Vectorizing Testing Text")
+
+    test_pos = glob.glob(os.path.join('data', 'aclImdb', 'test', 'pos', '*.txt'))
+    test_neg = glob.glob(os.path.join('data', 'aclImdb', 'test', 'neg', '*.txt'))
+
+    X_test = vectorizer.transform(test_pos + test_neg)
+    y_test = np.array([1]*len(test_pos)+[0]*len(test_neg))
+
+    return X_train, y_train, X_test, y_test
+
+def main():
+
+    X_train, y_train, X_test, y_test = load_imdb()
+
+    print("Fitting Model")
+
+    mnbsvm = NBSVM()
+    mnbsvm.fit(X_train, y_train)
+    print('Test Accuracy: %s' % mnbsvm.score(X_test, y_test))
+
+if __name__ == '__main__':
+    main()
+
+
